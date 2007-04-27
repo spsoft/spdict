@@ -1,0 +1,34 @@
+			 spdict README
+
+1.Introduction
+
+spdict is a library of dictionary algorithms written in C++.
+
+Initial release with support for sorted array, binary search tree,
+red-black tree, skip list and balanced tree algorithms.
+
+The spdict code was developed under Linux, but has also been tested under
+Solaris.
+
+You can get the code from the spdict home page:
+
+	http://code.google.com/p/spdict/
+
+2.Building
+
+To build libspdict.so, type
+
+$ make
+
+This will build all the targets include examples. You can run the
+example programs:
+
+$ testdict -v
+
+
+Reports of successful use of spdict are appreciated.
+
+Enjoy!
+
+				-- stephen liu <stephen.nil@gmail.com>
+
