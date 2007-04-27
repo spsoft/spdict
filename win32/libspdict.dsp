@@ -97,6 +97,10 @@ SOURCE=..\spbtreeimpl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\spcache.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\spdictionary.cpp
 # End Source File
 # Begin Source File
@@ -122,6 +126,10 @@ SOURCE=..\spbstreeimpl.hpp
 # Begin Source File
 
 SOURCE=..\spbtreeimpl.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spcache.hpp
 # End Source File
 # Begin Source File
 

@@ -5,7 +5,7 @@ CC = gcc
 AR = ar cru
 CFLAGS = -Wall -D_REENTRANT -D_GNU_SOURCE -g
 SOFLAGS = -shared -fPIC
-LDFLAGS =
+LDFLAGS = -lpthread
 
 LINKER = $(CC)
 LINT = lint -c
@@ -19,9 +19,10 @@ endif
 
 LIBOBJS = spdictionary.o \
 	spbtreeimpl.o spslistimpl.o \
-	sparrayimpl.o spbstreeimpl.o sprbtreeimpl.o
+	sparrayimpl.o spbstreeimpl.o sprbtreeimpl.o \
+	spcache.o
 
-TARGET =  libspdict.so testdict
+TARGET =  libspdict.so testdict testcache
 
 #--------------------------------------------------------------------
 
@@ -31,6 +32,9 @@ libspdict.so: $(LIBOBJS)
 	$(LINKER) $(SOFLAGS) $^ -o $@
 
 testdict: testdict.o
+	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
+
+testcache: testcache.o
 	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
 
 dist: clean spdict-$(version).src.tar.gz
