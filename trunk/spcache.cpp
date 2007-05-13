@@ -5,6 +5,8 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
 
 #ifndef WIN32
 #include <pthread.h>
@@ -108,15 +110,20 @@ public:
 	void setItem( const void * item );
 	const void * getItem();
 
+	void setExpTime( time_t expTime );
+	time_t getExpTime();
+
 private:
 	SP_CacheEntry * mPrev, * mNext;
 	const void * mItem;
+	time_t mExpTime;
 };
 
 SP_CacheEntry :: SP_CacheEntry( const void * item )
 {
 	mItem = item;
 	mPrev = mNext = NULL;
+	mExpTime = 0;
 }
 
 SP_CacheEntry :: ~SP_CacheEntry()
@@ -153,6 +160,16 @@ void SP_CacheEntry :: setItem( const void * item )
 const void * SP_CacheEntry :: getItem()
 {
 	return mItem;
+}
+
+void SP_CacheEntry :: setExpTime( time_t expTime )
+{
+	mExpTime = expTime;
+}
+
+time_t SP_CacheEntry :: getExpTime()
+{
+	return mExpTime;
 }
 
 class SP_CacheEntryList {
@@ -259,9 +276,10 @@ public:
 	SP_CacheImpl( int algo, int maxItems, SP_CacheHandler * handler );
 	virtual ~SP_CacheImpl();
 
-	virtual int put( void * itemm );
+	virtual int put( void * item, time_t expTime = 0 );
 	virtual int get( const void * key, void * resultHolder );
-	virtual int remove( const void * key );
+	virtual int erase( const void * key );
+	virtual void * remove( const void * key, time_t * expTime = 0 );
 	virtual SP_CacheStatistics * getStatistics();
 
 private:
@@ -272,12 +290,6 @@ private:
 	SP_Dictionary * mDict;
 	SP_CacheEntryList * mList;
 	SP_CacheStatisticsImpl * mStatistics;
-
-#ifndef WIN32
-	pthread_mutex_t mMutex;
-#else
-	HANDLE mMutex;
-#endif
 };
 
 SP_CacheImpl :: SP_CacheImpl( int algo, int maxItems,
@@ -287,17 +299,11 @@ SP_CacheImpl :: SP_CacheImpl( int algo, int maxItems,
 	mMaxItems = maxItems;
 	mHandler = handler;
 
-	mDict = SP_Dictionary::newInstance( SP_Dictionary::eBTree,
+	mDict = SP_Dictionary::newInstance( SP_Dictionary::eBSTree,
 			new SP_CacheHandlerAdapter( handler ) );
 	mList = new SP_CacheEntryList();
 
 	mStatistics = new SP_CacheStatisticsImpl();
-
-#ifndef WIN32
-	pthread_mutex_init( &mMutex, NULL );
-#else
-	mMutex = CreateMutex(0, FALSE, 0);
-#endif
 }
 
 SP_CacheImpl :: ~SP_CacheImpl()
@@ -306,25 +312,14 @@ SP_CacheImpl :: ~SP_CacheImpl()
 	delete mList;
 	delete mDict;
 	delete mHandler;
-
-#ifndef WIN32
-	pthread_mutex_destroy( &mMutex );
-#else
-	CloseHandle( mMutex );
-#endif
 }
 
-int SP_CacheImpl :: put( void * item )
+int SP_CacheImpl :: put( void * item, time_t expTime )
 {
 	int result = 0;
 
-#ifndef WIN32
-	pthread_mutex_lock( &mMutex );
-#else
-	WaitForSingleObject( mMutex, INFINITE );
-#endif
-
 	SP_CacheEntry * entry = new SP_CacheEntry( item );
+	entry->setExpTime( expTime );
 
 	SP_CacheEntry * oldEntry = (SP_CacheEntry*)mDict->search( entry );
 	if( NULL != oldEntry ) {
@@ -340,7 +335,7 @@ int SP_CacheImpl :: put( void * item )
 	mDict->insert( entry );
 	mList->append( entry );
 
-	for( ; mDict->getCount() > mMaxItems; ) {
+	for( ; mDict->getCount() > mMaxItems && mMaxItems > 0; ) {
 		SP_CacheEntry * head = mList->getHead();
 
 		mList->remove( head );
@@ -350,12 +345,6 @@ int SP_CacheImpl :: put( void * item )
 		delete head;
 	}
 
-#ifndef WIN32
-	pthread_mutex_unlock( &mMutex );
-#else
-	ReleaseMutex( mMutex );
-#endif
-
 	return result;
 }
 
@@ -363,86 +352,196 @@ int SP_CacheImpl :: get( const void * key, void * resultHolder )
 {
 	int result = 0;
 
-#ifndef WIN32
-	pthread_mutex_lock( &mMutex );
-#else
-	WaitForSingleObject( mMutex, INFINITE );
-#endif
-
 	SP_CacheEntry keyEntry( key );
 	SP_CacheEntry * entry = (SP_CacheEntry*)mDict->search( &keyEntry );
 
 	if( NULL != entry ) {
-		result = 1;
-		mHandler->onHit( entry->getItem(), resultHolder );
+		if( entry->getExpTime() > 0 && entry->getExpTime() < time( NULL ) ) {
+			//erase( key );
+		} else {
+			result = 1;
+			mHandler->onHit( entry->getItem(), resultHolder );
 
-		if( eLRU == mAlgo ) {
-			mList->remove( entry );
-			mList->append( entry );
+			if( eLRU == mAlgo ) {
+				mList->remove( entry );
+				mList->append( entry );
+			}
+
+			mStatistics->markHit();
 		}
-
-		mStatistics->markHit();
 	} else {
 		mStatistics->markMiss();
 	}
 
-#ifndef WIN32
-	pthread_mutex_unlock( &mMutex );
-#else
-	ReleaseMutex( mMutex );
-#endif
+	return result;
+}
+
+int SP_CacheImpl :: erase( const void * key )
+{
+	int result = 0;
+
+	void * item = remove( key );
+
+	if( NULL != item ) {
+		result = 1;
+		mHandler->destroy( item );
+	}
 
 	return result;
 }
 
-int SP_CacheImpl :: remove( const void * key )
+void * SP_CacheImpl :: remove( const void * key, time_t * expTime )
 {
-	int result = 0;
-
-#ifndef WIN32
-	pthread_mutex_lock( &mMutex );
-#else
-	WaitForSingleObject( mMutex, INFINITE );
-#endif
+	void * result = NULL;
 
 	SP_CacheEntry keyEntry( key );
 	SP_CacheEntry * entry = (SP_CacheEntry*)mDict->remove( &keyEntry );
 
 	if( NULL != entry ) {
-		result = 1;
 		mList->remove( entry );
 
-		mHandler->destroy( (void*)entry->getItem() );
+		if( NULL != expTime ) *expTime = entry->getExpTime();
+		result = (void*)entry->getItem();
 		delete entry;
 	}
-
-#ifndef WIN32
-	pthread_mutex_unlock( &mMutex );
-#else
-	ReleaseMutex( mMutex );
-#endif
 
 	return result;
 }
 
 SP_CacheStatistics * SP_CacheImpl :: getStatistics()
 {
-#ifndef WIN32
-	pthread_mutex_lock( &mMutex );
-#else
-	WaitForSingleObject( mMutex, INFINITE );
-#endif
-
 	SP_CacheStatisticsImpl * ret = new SP_CacheStatisticsImpl( *mStatistics );
 	ret->setSize( mDict->getCount() );
 
+	return ret;
+}
+
+//===========================================================================
+
+class SP_ThreadSafeCacheWrapper : public SP_Cache {
+public:
+	SP_ThreadSafeCacheWrapper( SP_Cache * cache );
+	virtual ~SP_ThreadSafeCacheWrapper();
+
+	virtual int put( void * item, time_t expTime = 0 );
+	virtual int get( const void * key, void * resultHolder );
+	virtual int erase( const void * key );
+	virtual void * remove( const void * key, time_t * expTime );
+	virtual SP_CacheStatistics * getStatistics();
+
+private:
+
+	enum { eRead, eWrite };
+	void lock( int lockType );
+	void unlock();
+
+	SP_Cache * mCache;
+
 #ifndef WIN32
-	pthread_mutex_unlock( &mMutex );
+	pthread_rwlock_t mLock;
+#else
+	HANDLE mMutex;
+#endif
+
+};
+
+SP_ThreadSafeCacheWrapper :: SP_ThreadSafeCacheWrapper( SP_Cache * cache )
+{
+	mCache = cache;
+
+#ifndef WIN32
+	pthread_rwlock_init( &mLock, NULL );
+#else
+	mMutex = CreateMutex(0, FALSE, 0);
+#endif
+}
+
+SP_ThreadSafeCacheWrapper :: ~SP_ThreadSafeCacheWrapper()
+{
+	delete mCache;
+
+#ifndef WIN32
+	pthread_rwlock_destroy( &mLock );
+#else
+	CloseHandle( mMutex );
+#endif
+}
+
+void SP_ThreadSafeCacheWrapper :: lock( int lockType )
+{
+#ifndef WIN32
+	if( eRead == lockType ) {
+		assert( 0 == pthread_rwlock_rdlock( &mLock ) );
+	} else {
+		pthread_rwlock_wrlock( &mLock );
+	}
+#else
+	WaitForSingleObject( mMutex, INFINITE );
+#endif
+}
+
+void SP_ThreadSafeCacheWrapper :: unlock()
+{
+#ifndef WIN32
+	pthread_rwlock_unlock( &mLock );
 #else
 	ReleaseMutex( mMutex );
 #endif
+}
+
+int SP_ThreadSafeCacheWrapper :: put( void * item, time_t expTime )
+{
+	lock( eWrite );
+
+	int ret = mCache->put( item, expTime );
+
+	unlock();
 
 	return ret;
+}
+
+int SP_ThreadSafeCacheWrapper :: get( const void * key, void * resultHolder )
+{
+	lock( eRead );
+
+	int ret = mCache->get( key, resultHolder );
+
+	unlock();
+
+	return ret;
+}
+
+int SP_ThreadSafeCacheWrapper :: erase( const void * key )
+{
+	lock( eWrite );
+
+	int ret = mCache->erase( key );
+
+	unlock();
+
+	return ret;
+}
+
+void * SP_ThreadSafeCacheWrapper :: remove( const void * key, time_t * expTime )
+{
+	lock( eWrite );
+
+	void * item = mCache->remove( key, expTime );
+
+	unlock();
+
+	return item;
+}
+
+SP_CacheStatistics * SP_ThreadSafeCacheWrapper :: getStatistics()
+{
+	lock( eWrite );
+
+	SP_CacheStatistics * stat = mCache->getStatistics();
+
+	unlock();
+
+	return stat;
 }
 
 //===========================================================================
@@ -452,8 +551,11 @@ SP_Cache :: ~SP_Cache()
 }
 
 SP_Cache * SP_Cache :: newInstance( int algo,
-		int maxItems, SP_CacheHandler * handler )
+		int maxItems, SP_CacheHandler * handler, int threadSafe )
 {
-	return new SP_CacheImpl( algo, maxItems, handler );
+	SP_Cache * cache = new SP_CacheImpl( algo, maxItems, handler );
+	if( threadSafe ) cache = new SP_ThreadSafeCacheWrapper( cache );
+
+	return cache;
 }
 
