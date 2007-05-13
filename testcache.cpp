@@ -148,7 +148,7 @@ int main( int argc, char * argv[] )
 
 		if( 1 == ( i % 10 ) ) {
 			SP_User temp( name );
-			cache->remove( &temp );
+			cache->erase( &temp );
 			assert( 0 == cache->get( &temp, name ) );
 		}
 	}
