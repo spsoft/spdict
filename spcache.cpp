@@ -203,6 +203,9 @@ SP_CacheEntry * SP_CacheEntryList :: getHead()
 
 void SP_CacheEntryList :: append( SP_CacheEntry * entry )
 {
+	entry->setPrev( NULL );
+	entry->setNext( NULL );
+
 	if( NULL == mTail ) {
 		mHead = mTail = entry;
 	} else {
@@ -217,6 +220,9 @@ void SP_CacheEntryList :: remove( SP_CacheEntry * entry )
 {
 	SP_CacheEntry * prev = entry->getPrev(), * next = entry->getNext();
 
+	if( mHead == entry ) assert( NULL == prev );
+	if( mTail == entry ) assert( NULL == next );
+
 	if( NULL == prev ) {
 		mHead = next;
 	} else {
@@ -228,6 +234,9 @@ void SP_CacheEntryList :: remove( SP_CacheEntry * entry )
 	} else {
 		next->setPrev( prev );
 	}
+
+	entry->setPrev( NULL );
+	entry->setNext( NULL );
 }
 
 //===========================================================================
@@ -299,7 +308,7 @@ SP_CacheImpl :: SP_CacheImpl( int algo, int maxItems,
 	mMaxItems = maxItems;
 	mHandler = handler;
 
-	mDict = SP_Dictionary::newInstance( SP_Dictionary::eBSTree,
+	mDict = SP_Dictionary::newInstance( SP_Dictionary::eBTree,
 			new SP_CacheHandlerAdapter( handler ) );
 	mList = new SP_CacheEntryList();
 
@@ -357,7 +366,7 @@ int SP_CacheImpl :: get( const void * key, void * resultHolder )
 
 	if( NULL != entry ) {
 		if( entry->getExpTime() > 0 && entry->getExpTime() < time( NULL ) ) {
-			//erase( key );
+			erase( key );
 		} else {
 			result = 1;
 			mHandler->onHit( entry->getItem(), resultHolder );
@@ -431,14 +440,13 @@ public:
 
 private:
 
-	enum { eRead, eWrite };
-	void lock( int lockType );
+	void lock();
 	void unlock();
 
 	SP_Cache * mCache;
 
 #ifndef WIN32
-	pthread_rwlock_t mLock;
+	pthread_mutex_t mMutex;
 #else
 	HANDLE mMutex;
 #endif
@@ -450,7 +458,7 @@ SP_ThreadSafeCacheWrapper :: SP_ThreadSafeCacheWrapper( SP_Cache * cache )
 	mCache = cache;
 
 #ifndef WIN32
-	pthread_rwlock_init( &mLock, NULL );
+	pthread_mutex_init( &mMutex, NULL );
 #else
 	mMutex = CreateMutex(0, FALSE, 0);
 #endif
@@ -461,20 +469,16 @@ SP_ThreadSafeCacheWrapper :: ~SP_ThreadSafeCacheWrapper()
 	delete mCache;
 
 #ifndef WIN32
-	pthread_rwlock_destroy( &mLock );
+	pthread_mutex_destroy( &mMutex );
 #else
 	CloseHandle( mMutex );
 #endif
 }
 
-void SP_ThreadSafeCacheWrapper :: lock( int lockType )
+void SP_ThreadSafeCacheWrapper :: lock()
 {
 #ifndef WIN32
-	if( eRead == lockType ) {
-		assert( 0 == pthread_rwlock_rdlock( &mLock ) );
-	} else {
-		pthread_rwlock_wrlock( &mLock );
-	}
+	pthread_mutex_lock( &mMutex );
 #else
 	WaitForSingleObject( mMutex, INFINITE );
 #endif
@@ -483,7 +487,7 @@ void SP_ThreadSafeCacheWrapper :: lock( int lockType )
 void SP_ThreadSafeCacheWrapper :: unlock()
 {
 #ifndef WIN32
-	pthread_rwlock_unlock( &mLock );
+	pthread_mutex_unlock( &mMutex );
 #else
 	ReleaseMutex( mMutex );
 #endif
@@ -491,7 +495,7 @@ void SP_ThreadSafeCacheWrapper :: unlock()
 
 int SP_ThreadSafeCacheWrapper :: put( void * item, time_t expTime )
 {
-	lock( eWrite );
+	lock();
 
 	int ret = mCache->put( item, expTime );
 
@@ -502,7 +506,7 @@ int SP_ThreadSafeCacheWrapper :: put( void * item, time_t expTime )
 
 int SP_ThreadSafeCacheWrapper :: get( const void * key, void * resultHolder )
 {
-	lock( eRead );
+	lock();
 
 	int ret = mCache->get( key, resultHolder );
 
@@ -513,7 +517,7 @@ int SP_ThreadSafeCacheWrapper :: get( const void * key, void * resultHolder )
 
 int SP_ThreadSafeCacheWrapper :: erase( const void * key )
 {
-	lock( eWrite );
+	lock();
 
 	int ret = mCache->erase( key );
 
@@ -524,7 +528,7 @@ int SP_ThreadSafeCacheWrapper :: erase( const void * key )
 
 void * SP_ThreadSafeCacheWrapper :: remove( const void * key, time_t * expTime )
 {
-	lock( eWrite );
+	lock();
 
 	void * item = mCache->remove( key, expTime );
 
@@ -535,7 +539,7 @@ void * SP_ThreadSafeCacheWrapper :: remove( const void * key, time_t * expTime )
 
 SP_CacheStatistics * SP_ThreadSafeCacheWrapper :: getStatistics()
 {
-	lock( eWrite );
+	lock();
 
 	SP_CacheStatistics * stat = mCache->getStatistics();
 
