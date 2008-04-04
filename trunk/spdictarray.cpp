@@ -6,30 +6,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sparrayimpl.hpp"
+#include "spdictarray.hpp"
 
 //===========================================================================
 
-SP_SortedArrayNode :: SP_SortedArrayNode( void * item )
+SP_DictSortedArrayNode :: SP_DictSortedArrayNode( void * item )
 {
 	mItem = item;
 }
 
-SP_SortedArrayNode :: ~SP_SortedArrayNode()
+SP_DictSortedArrayNode :: ~SP_DictSortedArrayNode()
 {
 }
 
-void SP_SortedArrayNode :: setItem( void * item )
+void SP_DictSortedArrayNode :: setItem( void * item )
 {
 	mItem = item;
 }
 
-void * SP_SortedArrayNode :: getItem() const
+void * SP_DictSortedArrayNode :: getItem() const
 {
 	return mItem;
 }
 
-void * SP_SortedArrayNode :: takeItem()
+void * SP_DictSortedArrayNode :: takeItem()
 {
 	void * ret = mItem;
 	mItem = NULL;
@@ -39,18 +39,18 @@ void * SP_SortedArrayNode :: takeItem()
 
 //===========================================================================
 
-SP_SortedArrayIterator :: SP_SortedArrayIterator( SP_SortedArrayNode ** list, int count )
+SP_DictSortedArrayIterator :: SP_DictSortedArrayIterator( SP_DictSortedArrayNode ** list, int count )
 {
 	mList = list;
 	mCount = count;
 	mIndex = 0;
 }
 
-SP_SortedArrayIterator :: ~SP_SortedArrayIterator()
+SP_DictSortedArrayIterator :: ~SP_DictSortedArrayIterator()
 {
 }
 
-const void * SP_SortedArrayIterator :: getNext( int * level )
+const void * SP_DictSortedArrayIterator :: getNext( int * level )
 {
 	if( mIndex < mCount ) return mList[ mIndex++ ]->getItem();
 
@@ -59,18 +59,18 @@ const void * SP_SortedArrayIterator :: getNext( int * level )
 
 //===========================================================================
 
-SP_SortedArrayImpl :: SP_SortedArrayImpl( SP_DictHandler * handler )
+SP_DictSortedArray :: SP_DictSortedArray( SP_DictHandler * handler )
 {
 	mHandler = handler;
 
 	mMaxCount = 128;
 	mCount = 0;
 
-	mList = (SP_SortedArrayNode**)malloc( mMaxCount * sizeof( void * ) );
+	mList = (SP_DictSortedArrayNode**)malloc( mMaxCount * sizeof( void * ) );
 	memset( mList, 0, mMaxCount * sizeof( void * ) );
 }
 
-SP_SortedArrayImpl :: ~SP_SortedArrayImpl()
+SP_DictSortedArray :: ~SP_DictSortedArray()
 {
 	for( int i = 0; i < mCount; i++ ) {
 		mHandler->destroy( mList[i]->getItem() );
@@ -81,7 +81,7 @@ SP_SortedArrayImpl :: ~SP_SortedArrayImpl()
 	delete mHandler;
 }
 
-int SP_SortedArrayImpl :: binarySearch( const void * item, int * insertPoint,
+int SP_DictSortedArray :: binarySearch( const void * item, int * insertPoint,
 		int firstIndex, int size ) const
 {
 	// if aiSize not specify, then search the hold list
@@ -105,7 +105,7 @@ int SP_SortedArrayImpl :: binarySearch( const void * item, int * insertPoint,
 	}
 }
 
-int SP_SortedArrayImpl :: insert( void * item )
+int SP_DictSortedArray :: insert( void * item )
 {
 	int insertPoint = -1;
 
@@ -116,7 +116,7 @@ int SP_SortedArrayImpl :: insert( void * item )
 	} else {
 		if( mCount >= mMaxCount ) {
 			mMaxCount = ( mMaxCount * 3 ) / 2 + 1;
-			mList = (SP_SortedArrayNode**)realloc( mList, mMaxCount * sizeof( void * ) );
+			mList = (SP_DictSortedArrayNode**)realloc( mList, mMaxCount * sizeof( void * ) );
 			memset( mList + mCount, 0, ( mMaxCount - mCount ) * sizeof( void * ) );
 		}
 		if( insertPoint < mCount ) {
@@ -124,14 +124,14 @@ int SP_SortedArrayImpl :: insert( void * item )
 					( mCount - insertPoint ) * sizeof( void * ) );
 		}
 
-		mList[ insertPoint ] = new SP_SortedArrayNode( item );
+		mList[ insertPoint ] = new SP_DictSortedArrayNode( item );
 		mCount++;
 	}
 
 	return index >= 0 ? 1 : 0;
 }
 
-const void * SP_SortedArrayImpl :: search( const void * key ) const
+const void * SP_DictSortedArray :: search( const void * key ) const
 {
 	const void * ret = NULL;
 
@@ -141,13 +141,13 @@ const void * SP_SortedArrayImpl :: search( const void * key ) const
 	return ret;
 }
 
-void * SP_SortedArrayImpl :: remove( const void * key )
+void * SP_DictSortedArray :: remove( const void * key )
 {
 	void * ret = NULL;
 
 	int index = binarySearch( key );
 	if( index >= 0 ) {
-		SP_SortedArrayNode * node = mList[ index ];
+		SP_DictSortedArrayNode * node = mList[ index ];
 		memmove( mList + index, mList + index + 1, ( mCount - index - 1 ) * sizeof( void * ) );
 
 		ret = node->takeItem();
@@ -159,13 +159,13 @@ void * SP_SortedArrayImpl :: remove( const void * key )
 	return ret;
 }
 
-int SP_SortedArrayImpl :: getCount() const
+int SP_DictSortedArray :: getCount() const
 {
 	return mCount;
 }
 
-SP_DictIterator * SP_SortedArrayImpl :: getIterator() const
+SP_DictIterator * SP_DictSortedArray :: getIterator() const
 {
-	return new SP_SortedArrayIterator( mList, mCount );
+	return new SP_DictSortedArrayIterator( mList, mCount );
 }
 

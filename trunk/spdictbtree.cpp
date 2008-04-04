@@ -9,16 +9,16 @@
 #include <assert.h>
 #include <math.h>
 
-#include "spbtreeimpl.hpp"
+#include "spdictbtree.hpp"
 
 //===========================================================================
 
-SP_BTreeNode :: SP_BTreeNode( int maxCount, SP_DictHandler * handler )
+SP_DictBTreeNode :: SP_DictBTreeNode( int maxCount, SP_DictHandler * handler )
 		: mMaxCount( maxCount )
 {
 	mNodeCount = mItemCount = 0;
 	mHandler = handler;
-	mNodeList = (SP_BTreeNode**)malloc(
+	mNodeList = (SP_DictBTreeNode**)malloc(
 			sizeof( void * ) * ( mMaxCount + 1 ) );
 	memset( mNodeList, 0, sizeof( void * ) * ( mMaxCount + 1 ) );
 	mItemList = (void**)malloc( sizeof( void * ) * mMaxCount );
@@ -27,7 +27,7 @@ SP_BTreeNode :: SP_BTreeNode( int maxCount, SP_DictHandler * handler )
 	mParent = NULL;
 }
 
-SP_BTreeNode :: ~SP_BTreeNode()
+SP_DictBTreeNode :: ~SP_DictBTreeNode()
 {
 	for( int i = 0; i < mNodeCount; i++ ) {
 		delete mNodeList[i];
@@ -41,17 +41,17 @@ SP_BTreeNode :: ~SP_BTreeNode()
 	free( mItemList );
 }
 
-int SP_BTreeNode :: getItemCount() const
+int SP_DictBTreeNode :: getItemCount() const
 {
 	return mItemCount;
 }
 
-int SP_BTreeNode :: getNodeCount() const
+int SP_DictBTreeNode :: getNodeCount() const
 {
 	return mNodeCount;
 }
 
-void SP_BTreeNode :: insertItem( int index, void * item )
+void SP_DictBTreeNode :: insertItem( int index, void * item )
 {
 	assert( NULL != item );
 	if( index >= 0 && mItemCount < mMaxCount ) {
@@ -70,12 +70,12 @@ void SP_BTreeNode :: insertItem( int index, void * item )
 	}
 }
 
-void SP_BTreeNode :: appendItem( void * item )
+void SP_DictBTreeNode :: appendItem( void * item )
 {
 	insertItem( mItemCount, item );
 }
 
-void * SP_BTreeNode :: takeItem( int index )
+void * SP_DictBTreeNode :: takeItem( int index )
 {
 	void * item = NULL;
 	if( index >= 0 && index < mItemCount ) {
@@ -89,7 +89,7 @@ void * SP_BTreeNode :: takeItem( int index )
 	return item;
 }
 
-void * SP_BTreeNode :: getItem( int index ) const
+void * SP_DictBTreeNode :: getItem( int index ) const
 {
 	if( index >= 0 && index < mItemCount ) {
 		return mItemList[ index ];
@@ -98,7 +98,7 @@ void * SP_BTreeNode :: getItem( int index ) const
 	return NULL;
 }
 
-void SP_BTreeNode :: updateItem( int index, void * item )
+void SP_DictBTreeNode :: updateItem( int index, void * item )
 {
 	if( index >= 0 && index < mItemCount ) {
 		mHandler->destroy( mItemList[ index ] );
@@ -109,7 +109,7 @@ void SP_BTreeNode :: updateItem( int index, void * item )
 	}
 }
 
-void SP_BTreeNode :: insertNode( int index, SP_BTreeNode * node )
+void SP_DictBTreeNode :: insertNode( int index, SP_DictBTreeNode * node )
 {
 	if( NULL == node ) return;
 	if( index >= 0 && mNodeCount <= mMaxCount ) {
@@ -129,14 +129,14 @@ void SP_BTreeNode :: insertNode( int index, SP_BTreeNode * node )
 	}
 }
 
-void SP_BTreeNode :: appendNode( SP_BTreeNode * node )
+void SP_DictBTreeNode :: appendNode( SP_DictBTreeNode * node )
 {
 	insertNode( mNodeCount, node );
 }
 
-SP_BTreeNode * SP_BTreeNode :: takeNode( int index )
+SP_DictBTreeNode * SP_DictBTreeNode :: takeNode( int index )
 {
-	SP_BTreeNode * node = NULL;
+	SP_DictBTreeNode * node = NULL;
 	if( index >= 0 && index < mNodeCount ) {
 		node = mNodeList[ index ];
 		mNodeCount--;
@@ -148,7 +148,7 @@ SP_BTreeNode * SP_BTreeNode :: takeNode( int index )
 	return node;
 }
 
-SP_BTreeNode * SP_BTreeNode :: getNode( int index ) const
+SP_DictBTreeNode * SP_DictBTreeNode :: getNode( int index ) const
 {
 	if( index >= 0 && index < mNodeCount ) {
 		return mNodeList[ index ];
@@ -157,32 +157,32 @@ SP_BTreeNode * SP_BTreeNode :: getNode( int index ) const
 	return NULL;
 }
 
-void SP_BTreeNode :: setParent( SP_BTreeNode * parent )
+void SP_DictBTreeNode :: setParent( SP_DictBTreeNode * parent )
 {
 	mParent = parent;
 }
 
-SP_BTreeNode * SP_BTreeNode :: getParent() const
+SP_DictBTreeNode * SP_DictBTreeNode :: getParent() const
 {
 	return mParent;
 }
 
-int SP_BTreeNode :: needMerge() const
+int SP_DictBTreeNode :: needMerge() const
 {
 	return mItemCount < ( ( mMaxCount + 1 ) / 2 - 1 );
 }
 
-int SP_BTreeNode :: needSplit() const
+int SP_DictBTreeNode :: needSplit() const
 {
 	return mItemCount >= mMaxCount ? 1 : 0;
 }
 
-int SP_BTreeNode :: canSplit() const
+int SP_DictBTreeNode :: canSplit() const
 {
 	return mItemCount > ( ( mMaxCount + 1 ) / 2 - 1 );
 }
 
-int SP_BTreeNode :: nodeIndex( const SP_BTreeNode * node ) const
+int SP_DictBTreeNode :: nodeIndex( const SP_DictBTreeNode * node ) const
 {
 	for( int i = 0; i < mNodeCount; i++ ) {
 		if( mNodeList[ i ] == node ) return i;
@@ -191,7 +191,7 @@ int SP_BTreeNode :: nodeIndex( const SP_BTreeNode * node ) const
 }
 
 // @return >= 0 : found, -1 : not found
-int SP_BTreeNode :: search( const void * item, int * insertPoint,
+int SP_DictBTreeNode :: search( const void * item, int * insertPoint,
 		int firstIndex, int size ) const
 {
 	// if size not specify, then search the hold list
@@ -217,50 +217,50 @@ int SP_BTreeNode :: search( const void * item, int * insertPoint,
 
 //===========================================================================
 
-SP_BTreeSearchResult :: SP_BTreeSearchResult()
+SP_DictBTreeSearchResult :: SP_DictBTreeSearchResult()
 {
 	mNode = NULL;
 	mIndex = -1;
 	mTag = 0;
 }
 
-SP_BTreeSearchResult :: ~SP_BTreeSearchResult()
+SP_DictBTreeSearchResult :: ~SP_DictBTreeSearchResult()
 {
 }
 
-void SP_BTreeSearchResult :: setNode( SP_BTreeNode * node )
+void SP_DictBTreeSearchResult :: setNode( SP_DictBTreeNode * node )
 {
 	mNode = node;
 }
 
-SP_BTreeNode * SP_BTreeSearchResult :: getNode()
+SP_DictBTreeNode * SP_DictBTreeSearchResult :: getNode()
 {
 	return mNode;
 }
 
-void SP_BTreeSearchResult :: setIndex( int index )
+void SP_DictBTreeSearchResult :: setIndex( int index )
 {
 	mIndex = index;
 }
 
-int SP_BTreeSearchResult :: getIndex()
+int SP_DictBTreeSearchResult :: getIndex()
 {
 	return mIndex;
 }
 
-void SP_BTreeSearchResult :: setTag( int tag )
+void SP_DictBTreeSearchResult :: setTag( int tag )
 {
 	mTag = tag;
 }
 
-int SP_BTreeSearchResult :: getTag()
+int SP_DictBTreeSearchResult :: getTag()
 {
 	return mTag;
 }
 
 //===========================================================================
 
-SP_BTreeIterator :: SP_BTreeIterator( const SP_BTreeNode * root, int count )
+SP_DictBTreeIterator :: SP_DictBTreeIterator( const SP_DictBTreeNode * root, int count )
 {
 	mCurrent = root;
 	mCurrIndex = 0;
@@ -268,11 +268,11 @@ SP_BTreeIterator :: SP_BTreeIterator( const SP_BTreeNode * root, int count )
 	mRemainCount = count;
 }
 
-SP_BTreeIterator :: ~SP_BTreeIterator()
+SP_DictBTreeIterator :: ~SP_DictBTreeIterator()
 {
 }
 
-const void * SP_BTreeIterator :: getNext( int * level )
+const void * SP_DictBTreeIterator :: getNext( int * level )
 {
 	if( NULL != mCurrent->getNode( mCurrIndex ) ) {
 		// move to leaf
@@ -284,7 +284,7 @@ const void * SP_BTreeIterator :: getNext( int * level )
 	}
 
 	const void * ret = NULL;
-	const SP_BTreeNode * parent = mCurrent;
+	const SP_DictBTreeNode * parent = mCurrent;
 	for( ; NULL == ret && NULL != parent; ) {
 		if( mCurrIndex < mCurrent->getItemCount() ) {
 			ret = mCurrent->getItem( mCurrIndex++ );
@@ -308,29 +308,29 @@ const void * SP_BTreeIterator :: getNext( int * level )
 
 //===========================================================================
 
-SP_BTreeImpl :: SP_BTreeImpl( int rank, SP_DictHandler * handler )
+SP_DictBTree :: SP_DictBTree( int rank, SP_DictHandler * handler )
 		: mRank( rank )
 {
-	mRoot = new SP_BTreeNode( rank, handler );
+	mRoot = new SP_DictBTreeNode( rank, handler );
 	mHandler = handler;
 	mCount = 0;
 }
 
-SP_BTreeImpl :: ~SP_BTreeImpl()
+SP_DictBTree :: ~SP_DictBTree()
 {
 	if( NULL != mRoot ) delete mRoot;
 	delete mHandler;
 }
 
-int SP_BTreeImpl :: getCount() const
+int SP_DictBTree :: getCount() const
 {
 	return mCount;
 }
 
-SP_BTreeNode * SP_BTreeImpl :: split( int rank,
-		SP_DictHandler * handler, SP_BTreeNode * node )
+SP_DictBTreeNode * SP_DictBTree :: split( int rank,
+		SP_DictHandler * handler, SP_DictBTreeNode * node )
 {
-	SP_BTreeNode * sibling = new SP_BTreeNode( rank, handler );
+	SP_DictBTreeNode * sibling = new SP_DictBTreeNode( rank, handler );
 	int index = ( rank + 1 ) / 2;
 	for( int i = index; i < rank; i++ ) {
 		sibling->appendItem( node->takeItem( index ) );
@@ -344,16 +344,16 @@ SP_BTreeNode * SP_BTreeImpl :: split( int rank,
 	return sibling;
 }
 
-int SP_BTreeImpl :: insert( void * item )
+int SP_DictBTree :: insert( void * item )
 {
-	SP_BTreeSearchResult result;
+	SP_DictBTreeSearchResult result;
 	search( mRoot, item, &result );
 
 	if( 0 == result.getTag() ) {
 		mCount++;
 
-		SP_BTreeNode * curr = result.getNode();
-		SP_BTreeNode * child = NULL;
+		SP_DictBTreeNode * curr = result.getNode();
+		SP_DictBTreeNode * child = NULL;
 		int index = result.getIndex();
 
 		for( ; ; ) {
@@ -365,7 +365,7 @@ int SP_BTreeImpl :: insert( void * item )
 				item = curr->takeItem( ( mRank + 1 ) / 2 - 1 );
 				assert( NULL != item );
 				if( NULL == curr->getParent() ) {
-					mRoot = new SP_BTreeNode( mRank, mHandler );
+					mRoot = new SP_DictBTreeNode( mRank, mHandler );
 					mRoot->insertNode( 0, curr );
 				}
 				curr = curr->getParent();
@@ -384,9 +384,9 @@ int SP_BTreeImpl :: insert( void * item )
 	return result.getTag();
 }
 
-const void * SP_BTreeImpl :: search( const void * key ) const
+const void * SP_DictBTree :: search( const void * key ) const
 {
-	SP_BTreeSearchResult result;
+	SP_DictBTreeSearchResult result;
 	search( mRoot, key, &result );
 
 	if( 0 != result.getTag() ) {
@@ -396,11 +396,11 @@ const void * SP_BTreeImpl :: search( const void * key ) const
 	return NULL;
 }
 
-void SP_BTreeImpl :: search( SP_BTreeNode * node, const void * key,
-			SP_BTreeSearchResult * result )
+void SP_DictBTree :: search( SP_DictBTreeNode * node, const void * key,
+			SP_DictBTreeSearchResult * result )
 {
 	int stop = 0;
-	for( SP_BTreeNode * curr = node; 0 == stop; ) {
+	for( SP_DictBTreeNode * curr = node; 0 == stop; ) {
 		int insertPoint = -1;
 		int index = curr->search( key, &insertPoint );
 		if( index >= 0 ) {
@@ -421,7 +421,7 @@ void SP_BTreeImpl :: search( SP_BTreeNode * node, const void * key,
 	}
 }
 
-SP_BTreeNode * SP_BTreeImpl :: findLeaf( SP_BTreeNode * node )
+SP_DictBTreeNode * SP_DictBTree :: findLeaf( SP_DictBTreeNode * node )
 {
 	if( NULL != node ) {
 		for( ; NULL != node->getNode( 0 ); ) {
@@ -432,17 +432,17 @@ SP_BTreeNode * SP_BTreeImpl :: findLeaf( SP_BTreeNode * node )
 	return node;
 }
 
-SP_BTreeNode * SP_BTreeImpl :: merge( int rank, SP_BTreeNode * node )
+SP_DictBTreeNode * SP_DictBTree :: merge( int rank, SP_DictBTreeNode * node )
 {
-	SP_BTreeNode * parent = node->getParent();
+	SP_DictBTreeNode * parent = node->getParent();
 	if( NULL != parent ) {
 		int index = parent->nodeIndex( node );
 		if( index < 0 ) {
 			printf( "fatal error, invalid child\n" );
 		}
 
-		SP_BTreeNode * left = parent->getNode( index - 1 );
-		SP_BTreeNode * right = parent->getNode( index + 1 );
+		SP_DictBTreeNode * left = parent->getNode( index - 1 );
+		SP_DictBTreeNode * right = parent->getNode( index + 1 );
 
 		if( NULL != right ) {
 			if( right->canSplit() ) {
@@ -495,20 +495,20 @@ SP_BTreeNode * SP_BTreeImpl :: merge( int rank, SP_BTreeNode * node )
 	return parent;
 }
 
-void * SP_BTreeImpl :: remove( const void * key )
+void * SP_DictBTree :: remove( const void * key )
 {
 	void * ret = NULL;
 
-	SP_BTreeSearchResult result;
+	SP_DictBTreeSearchResult result;
 	search( mRoot, key, &result );
 
 	if( 0 != result.getTag() ) {
 		mCount--;
 
-		SP_BTreeNode * curr = result.getNode();
+		SP_DictBTreeNode * curr = result.getNode();
 		int index = result.getIndex();
 
-		SP_BTreeNode * leaf = findLeaf( curr->getNode( index + 1 ) );
+		SP_DictBTreeNode * leaf = findLeaf( curr->getNode( index + 1 ) );
 		if( NULL != leaf ) {
 			void * item = leaf->takeItem( 0 );
 			ret = curr->takeItem( index );
@@ -533,8 +533,8 @@ void * SP_BTreeImpl :: remove( const void * key )
 	return ret;
 }
 
-SP_DictIterator * SP_BTreeImpl :: getIterator() const
+SP_DictIterator * SP_DictBTree :: getIterator() const
 {
-	return new SP_BTreeIterator( mRoot, mCount );
+	return new SP_DictBTreeIterator( mRoot, mCount );
 }
 

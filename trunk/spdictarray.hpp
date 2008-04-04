@@ -3,18 +3,18 @@
  * For license terms, see the file COPYING along with this library.
  */
 
-#ifndef __sparrayimpl_hpp__
-#define __sparrayimpl_hpp__
+#ifndef __spdictarray_hpp__
+#define __spdictarray_hpp__
 
 #include <stdio.h>
 
 #include "spdictionary.hpp"
 
 // sorted array
-class SP_SortedArrayNode {
+class SP_DictSortedArrayNode {
 public:
-	SP_SortedArrayNode( void * item = 0 );
-	~SP_SortedArrayNode();
+	SP_DictSortedArrayNode( void * item = 0 );
+	~SP_DictSortedArrayNode();
 
 	void setItem( void * item );
 	void * getItem() const;
@@ -24,23 +24,23 @@ private:
 	void * mItem;
 };
 
-class SP_SortedArrayIterator : public SP_DictIterator {
+class SP_DictSortedArrayIterator : public SP_DictIterator {
 public:
-	SP_SortedArrayIterator( SP_SortedArrayNode ** list, int count );
-	virtual ~SP_SortedArrayIterator();
+	SP_DictSortedArrayIterator( SP_DictSortedArrayNode ** list, int count );
+	virtual ~SP_DictSortedArrayIterator();
 
 	virtual const void * getNext( int * level = 0 );
 
 private:
-	SP_SortedArrayNode ** mList;
+	SP_DictSortedArrayNode ** mList;
 	int mCount;
 	int mIndex;
 };
 
-class SP_SortedArrayImpl : public SP_Dictionary {
+class SP_DictSortedArray : public SP_Dictionary {
 public:
-	SP_SortedArrayImpl( SP_DictHandler * handler );
-	virtual ~SP_SortedArrayImpl();	
+	SP_DictSortedArray( SP_DictHandler * handler );
+	virtual ~SP_DictSortedArray();	
 
 	virtual int insert( void * item );
 	virtual const void * search( const void * key ) const;
@@ -54,7 +54,7 @@ private:
 	int binarySearch( const void * item, int * insertPoint = 0,
 			int firstIndex = 0, int size = -1 ) const;
 
-	SP_SortedArrayNode ** mList;
+	SP_DictSortedArrayNode ** mList;
 	int mMaxCount;
 	int mCount;
 
