@@ -3,8 +3,8 @@
  * For license terms, see the file COPYING along with this library.
  */
 
-#ifndef __spdict_hpp__
-#define __spdict_hpp__
+#ifndef __spdictionary_hpp__
+#define __spdictionary_hpp__
 
 class SP_DictHandler {
 public:

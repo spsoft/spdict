@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "spcache.hpp"
+#include "spdictcache.hpp"
 
 #ifndef WIN32
 #include <unistd.h>
@@ -74,7 +74,7 @@ private:
 	char * mName;
 };
 
-class SP_UserCacheHandler : public SP_CacheHandler {
+class SP_UserCacheHandler : public SP_DictCacheHandler {
 public:
 	SP_UserCacheHandler() {}
 
@@ -110,7 +110,7 @@ static char * randStr( char * buffer, int size )
 
 int main( int argc, char * argv[] )
 {
-	int size = 256, count = 1000, algo = SP_Cache::eFIFO;
+	int size = 256, count = 1000, algo = SP_DictCache::eFIFO;
 
 #ifndef WIN32
 	extern char *optarg;
@@ -118,7 +118,7 @@ int main( int argc, char * argv[] )
 	while ( ( c = getopt ( argc, argv, "a:s:c:v" ) ) != EOF ) {
 		switch ( c ) {
 			case 'a':
-				if( 0 == strcasecmp( "LRU", optarg ) ) algo = SP_Cache::eLRU;
+				if( 0 == strcasecmp( "LRU", optarg ) ) algo = SP_DictCache::eLRU;
 				break;
 			case 's':
 				size = atoi( optarg );
@@ -138,7 +138,7 @@ int main( int argc, char * argv[] )
 	SP_Clock clock;
 
 	SP_UserCacheHandler * handler = new SP_UserCacheHandler();
-	SP_Cache * cache = SP_Cache::newInstance( algo, size, handler );
+	SP_DictCache * cache = SP_DictCache::newInstance( algo, size, handler );
 
 	char name[ 9 ] = { 0 };
 	for( int i = 0; i < count; i++ ) {
@@ -153,7 +153,7 @@ int main( int argc, char * argv[] )
 		}
 	}
 
-	SP_CacheStatistics * stat = cache->getStatistics();
+	SP_DictCacheStatistics * stat = cache->getStatistics();
 
 	printf( "Stat : accesses( %d ), hits( %d ), size( %d )\n",
 			stat->getAccesses(), stat->getHits(), stat->getSize() );

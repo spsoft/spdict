@@ -12,17 +12,17 @@ LINT = lint -c
 RM = /bin/rm -f
 
 ifeq ($(origin version), undefined)
-version = 0.1
+	version = 0.2
 endif
 
 #--------------------------------------------------------------------
 
 LIBOBJS = spdictionary.o \
-	spbtreeimpl.o spslistimpl.o \
-	sparrayimpl.o spbstreeimpl.o sprbtreeimpl.o \
-	spcache.o
+	spdictbtree.o spdictslist.o \
+	spdictarray.o spdictbstree.o spdictrbtree.o \
+	spdictcache.o
 
-TARGET =  libspdict.so testdict testcache
+TARGET =  libspdict.so libspdict.a testdict testcache
 
 #--------------------------------------------------------------------
 
@@ -30,6 +30,9 @@ all: $(TARGET)
 
 libspdict.so: $(LIBOBJS)
 	$(LINKER) $(SOFLAGS) $^ -o $@
+
+libspdict.a: $(LIBOBJS)
+	$(AR) $@ $^
 
 testdict: testdict.o
 	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@

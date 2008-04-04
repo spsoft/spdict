@@ -3,21 +3,21 @@
  * For license terms, see the file COPYING along with this library.
  */
 
-#ifndef ___slistimpl_hpp__
-#define ___slistimpl_hpp__
+#ifndef ___spdictslist_hpp__
+#define ___spdictslist_hpp__
 
 #include <stdio.h>
 
 #include "spdictionary.hpp"
 
 // skip list
-class SP_SkipListNode {
+class SP_DictSkipListNode {
 public:
-	SP_SkipListNode( int maxLevel, void * item = 0 );
-	~SP_SkipListNode();
+	SP_DictSkipListNode( int maxLevel, void * item = 0 );
+	~SP_DictSkipListNode();
 
-	void setForward( int level, SP_SkipListNode * node );
-	SP_SkipListNode * getForward( int level ) const;
+	void setForward( int level, SP_DictSkipListNode * node );
+	SP_DictSkipListNode * getForward( int level ) const;
 
 	void setMaxLevel( int maxLevel );
 	int getMaxLevel() const;
@@ -29,25 +29,25 @@ public:
 private:
 	int mMaxLevel;
 	void * mItem;
-	SP_SkipListNode ** mForward;
+	SP_DictSkipListNode ** mForward;
 };
 
-class SP_SkipListIterator : public SP_DictIterator {
+class SP_DictSkipListIterator : public SP_DictIterator {
 public:
-	SP_SkipListIterator( const SP_SkipListNode * root, int count );
-	virtual ~SP_SkipListIterator();
+	SP_DictSkipListIterator( const SP_DictSkipListNode * root, int count );
+	virtual ~SP_DictSkipListIterator();
 
 	virtual const void * getNext( int * level = 0 );
 
 private:
-	const SP_SkipListNode * mCurrent;
+	const SP_DictSkipListNode * mCurrent;
 	int mRemainCount;
 };
 
-class SP_SkipListImpl : public SP_Dictionary {
+class SP_DictSkipList : public SP_Dictionary {
 public:
-	SP_SkipListImpl( int maxLevel, SP_DictHandler * handler );
-	virtual ~SP_SkipListImpl();
+	SP_DictSkipList( int maxLevel, SP_DictHandler * handler );
+	virtual ~SP_DictSkipList();
 
 	virtual int insert( void * item );
 	virtual const void * search( const void * key ) const;
@@ -60,7 +60,7 @@ private:
 
 	const int mMaxLevel;
 	int mCount;
-	SP_SkipListNode * mRoot;
+	SP_DictSkipListNode * mRoot;
 
 	SP_DictHandler * mHandler;
 };

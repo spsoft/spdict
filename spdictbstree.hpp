@@ -3,29 +3,29 @@
  * For license terms, see the file COPYING along with this library.
  */
 
-#ifndef ___bstreeimpl_hpp__
-#define ___bstreeimpl_hpp__
+#ifndef ___spdictbstree_hpp__
+#define ___spdictbstree_hpp__
 
 #include "spdictionary.hpp"
 
 // binray search tree
-class SP_BSTreeNode {
+class SP_DictBSTreeNode {
 public:
-	SP_BSTreeNode( void * item = 0 );
-	~SP_BSTreeNode();
+	SP_DictBSTreeNode( void * item = 0 );
+	~SP_DictBSTreeNode();
 
-	SP_BSTreeNode * getLeft() const;
-	void setLeft( SP_BSTreeNode * left );
+	SP_DictBSTreeNode * getLeft() const;
+	void setLeft( SP_DictBSTreeNode * left );
 
-	SP_BSTreeNode * getRight() const;
-	void setRight( SP_BSTreeNode * right );
+	SP_DictBSTreeNode * getRight() const;
+	void setRight( SP_DictBSTreeNode * right );
 
 	const void * getItem() const;
 	void * takeItem();
 	void setItem( void * item );
 
 private:
-	SP_BSTreeNode * mLeft, * mRight;
+	SP_DictBSTreeNode * mLeft, * mRight;
 	void * mItem;
 };
 
@@ -44,15 +44,15 @@ private:
 	int mCount;
 };
 
-class SP_BSTreeIterator : public SP_DictIterator {
+class SP_DictBSTreeIterator : public SP_DictIterator {
 public:
-	SP_BSTreeIterator( const SP_BSTreeNode * root, int count );
-	virtual ~SP_BSTreeIterator();
+	SP_DictBSTreeIterator( const SP_DictBSTreeNode * root, int count );
+	virtual ~SP_DictBSTreeIterator();
 
 	virtual const void * getNext( int * level = 0 );
 
 private:
-	static void pushLeft( SP_MyMiniStack * stack, const SP_BSTreeNode * node );
+	static void pushLeft( SP_MyMiniStack * stack, const SP_DictBSTreeNode * node );
 
 private:
 	int mLevel;
@@ -60,10 +60,10 @@ private:
 	SP_MyMiniStack * mStack;
 };
 
-class SP_BSTreeImpl : public SP_Dictionary {
+class SP_DictBSTree : public SP_Dictionary {
 public:
-	SP_BSTreeImpl( SP_DictHandler * handler );
-	virtual ~SP_BSTreeImpl();
+	SP_DictBSTree( SP_DictHandler * handler );
+	virtual ~SP_DictBSTree();
 
 	virtual int insert( void * item );
 	virtual const void * search( const void * key ) const;
@@ -73,11 +73,11 @@ public:
 
 protected:
 
-	static SP_BSTreeNode * removeTop( SP_BSTreeNode * apoNode );
+	static SP_DictBSTreeNode * removeTop( SP_DictBSTreeNode * apoNode );
 
-	static void freeItem( SP_BSTreeNode * node, SP_DictHandler * handler );
+	static void freeItem( SP_DictBSTreeNode * node, SP_DictHandler * handler );
 
-	SP_BSTreeNode * mRoot;
+	SP_DictBSTreeNode * mRoot;
 	SP_DictHandler * mHandler;
 	int mCount;
 };

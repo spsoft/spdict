@@ -14,26 +14,26 @@
 #include <windows.h>
 #endif
 
-#include "spcache.hpp"
+#include "spdictcache.hpp"
 #include "spdictionary.hpp"
 
 //===========================================================================
 
-SP_CacheHandler :: ~SP_CacheHandler()
+SP_DictCacheHandler :: ~SP_DictCacheHandler()
 {
 }
 
 //===========================================================================
 
-SP_CacheStatistics :: ~SP_CacheStatistics()
+SP_DictCacheStatistics :: ~SP_DictCacheStatistics()
 {
 }
 
-class SP_CacheStatisticsImpl : public SP_CacheStatistics {
+class SP_DictCacheStatisticsImpl : public SP_DictCacheStatistics {
 public:
-	SP_CacheStatisticsImpl();
-	SP_CacheStatisticsImpl( SP_CacheStatisticsImpl & other );
-	virtual ~SP_CacheStatisticsImpl();
+	SP_DictCacheStatisticsImpl();
+	SP_DictCacheStatisticsImpl( SP_DictCacheStatisticsImpl & other );
+	virtual ~SP_DictCacheStatisticsImpl();
 
 	virtual int getHits() const;
 	virtual int getAccesses() const;
@@ -47,65 +47,65 @@ private:
 	int mHits, mAccesses, mSize;
 };
 
-SP_CacheStatisticsImpl :: SP_CacheStatisticsImpl()
+SP_DictCacheStatisticsImpl :: SP_DictCacheStatisticsImpl()
 {
 	mHits = mAccesses = mSize = 0;
 }
 
-SP_CacheStatisticsImpl :: SP_CacheStatisticsImpl( SP_CacheStatisticsImpl & other )
+SP_DictCacheStatisticsImpl :: SP_DictCacheStatisticsImpl( SP_DictCacheStatisticsImpl & other )
 {
 	mHits = other.getHits();
 	mAccesses = other.getAccesses();
 	mSize = other.getSize();
 }
 
-SP_CacheStatisticsImpl :: ~SP_CacheStatisticsImpl()
+SP_DictCacheStatisticsImpl :: ~SP_DictCacheStatisticsImpl()
 {
 }
 
-int SP_CacheStatisticsImpl :: getHits() const
+int SP_DictCacheStatisticsImpl :: getHits() const
 {
 	return mHits;
 }
 
-int SP_CacheStatisticsImpl :: getAccesses() const
+int SP_DictCacheStatisticsImpl :: getAccesses() const
 {
 	return mAccesses;
 }
 
-int SP_CacheStatisticsImpl :: getSize() const
+int SP_DictCacheStatisticsImpl :: getSize() const
 {
 	return mSize;
 }
 
-void SP_CacheStatisticsImpl :: setSize( int size )
+void SP_DictCacheStatisticsImpl :: setSize( int size )
 {
 	mSize = size;
 }
 
-void SP_CacheStatisticsImpl :: markHit()
+void SP_DictCacheStatisticsImpl :: markHit()
 {
 	mHits++;
 	mAccesses++;
 }
 
-void SP_CacheStatisticsImpl :: markMiss()
+void SP_DictCacheStatisticsImpl :: markMiss()
 {
 	mAccesses++;
 }
 
 //===========================================================================
 
-class SP_CacheEntry {
+class SP_DictCacheEntry {
 public:
-	SP_CacheEntry( const void * item );
-	~SP_CacheEntry();
+	SP_DictCacheEntry( const void * item );
+	~SP_DictCacheEntry();
 
-	void setPrev( SP_CacheEntry * prev );
-	SP_CacheEntry * getPrev();
+	void setPrev( SP_DictCacheEntry * prev );
+	SP_DictCacheEntry * getPrev();
 
-	void setNext( SP_CacheEntry * next );
-	SP_CacheEntry * getNext();
+	void setNext( SP_DictCacheEntry * next );
+	SP_DictCacheEntry * getNext();
 
 	void setItem( const void * item );
 	const void * getItem();
@@ -114,94 +114,94 @@ public:
 	time_t getExpTime();
 
 private:
-	SP_CacheEntry * mPrev, * mNext;
+	SP_DictCacheEntry * mPrev, * mNext;
 	const void * mItem;
 	time_t mExpTime;
 };
 
-SP_CacheEntry :: SP_CacheEntry( const void * item )
+SP_DictCacheEntry :: SP_DictCacheEntry( const void * item )
 {
 	mItem = item;
 	mPrev = mNext = NULL;
 	mExpTime = 0;
 }
 
-SP_CacheEntry :: ~SP_CacheEntry()
+SP_DictCacheEntry :: ~SP_DictCacheEntry()
 {
 	mItem = NULL;
 	mPrev = mNext = NULL;
 }
 
-void SP_CacheEntry :: setPrev( SP_CacheEntry * prev )
+void SP_DictCacheEntry :: setPrev( SP_DictCacheEntry * prev )
 {
 	mPrev = prev;
 }
 
-SP_CacheEntry * SP_CacheEntry :: getPrev()
+SP_DictCacheEntry * SP_DictCacheEntry :: getPrev()
 {
 	return mPrev;
 }
 
-void SP_CacheEntry :: setNext( SP_CacheEntry * next )
+void SP_DictCacheEntry :: setNext( SP_DictCacheEntry * next )
 {
 	mNext = next;
 }
 
-SP_CacheEntry * SP_CacheEntry :: getNext()
+SP_DictCacheEntry * SP_DictCacheEntry :: getNext()
 {
 	return mNext;
 }
 
-void SP_CacheEntry :: setItem( const void * item )
+void SP_DictCacheEntry :: setItem( const void * item )
 {
 	mItem = item;
 }
 
-const void * SP_CacheEntry :: getItem()
+const void * SP_DictCacheEntry :: getItem()
 {
 	return mItem;
 }
 
-void SP_CacheEntry :: setExpTime( time_t expTime )
+void SP_DictCacheEntry :: setExpTime( time_t expTime )
 {
 	mExpTime = expTime;
 }
 
-time_t SP_CacheEntry :: getExpTime()
+time_t SP_DictCacheEntry :: getExpTime()
 {
 	return mExpTime;
 }
 
-class SP_CacheEntryList {
+class SP_DictCacheEntryList {
 public:
-	SP_CacheEntryList();
-	~SP_CacheEntryList();
+	SP_DictCacheEntryList();
+	~SP_DictCacheEntryList();
 
-	SP_CacheEntry * getHead();
+	SP_DictCacheEntry * getHead();
 
-	void append( SP_CacheEntry * entry );
+	void append( SP_DictCacheEntry * entry );
 
-	void remove( SP_CacheEntry * entry );
+	void remove( SP_DictCacheEntry * entry );
 
 private:
-	SP_CacheEntry * mHead, * mTail;
+	SP_DictCacheEntry * mHead, * mTail;
 };
 
-SP_CacheEntryList :: SP_CacheEntryList()
+SP_DictCacheEntryList :: SP_DictCacheEntryList()
 {
 	mHead = mTail = NULL;
 }
 
-SP_CacheEntryList :: ~SP_CacheEntryList()
+SP_DictCacheEntryList :: ~SP_DictCacheEntryList()
 {
 }
 
-SP_CacheEntry * SP_CacheEntryList :: getHead()
+SP_DictCacheEntry * SP_DictCacheEntryList :: getHead()
 {
 	return mHead;
 }
 
-void SP_CacheEntryList :: append( SP_CacheEntry * entry )
+void SP_DictCacheEntryList :: append( SP_DictCacheEntry * entry )
 {
 	entry->setPrev( NULL );
 	entry->setNext( NULL );
@@ -216,9 +216,9 @@ void SP_CacheEntryList :: append( SP_CacheEntry * entry )
 	}
 }
 
-void SP_CacheEntryList :: remove( SP_CacheEntry * entry )
+void SP_DictCacheEntryList :: remove( SP_DictCacheEntry * entry )
 {
-	SP_CacheEntry * prev = entry->getPrev(), * next = entry->getNext();
+	SP_DictCacheEntry * prev = entry->getPrev(), * next = entry->getNext();
 
 	if( mHead == entry ) assert( NULL == prev );
 	if( mTail == entry ) assert( NULL == next );
@@ -241,38 +241,38 @@ void SP_CacheEntryList :: remove( SP_CacheEntry * entry )
 
 //===========================================================================
 
-class SP_CacheHandlerAdapter : public SP_DictHandler {
+class SP_DictCacheHandlerAdapter : public SP_DictHandler {
 public:
-	SP_CacheHandlerAdapter( SP_CacheHandler * handler );
-	~SP_CacheHandlerAdapter();
+	SP_DictCacheHandlerAdapter( SP_DictCacheHandler * handler );
+	~SP_DictCacheHandlerAdapter();
 
 	virtual int compare( const void * item1, const void * item2 ) const;
 	virtual void destroy( void * item ) const;
 
 private:
-	SP_CacheHandler * mHandler;
+	SP_DictCacheHandler * mHandler;
 };
 
-SP_CacheHandlerAdapter :: SP_CacheHandlerAdapter( SP_CacheHandler * handler )
+SP_DictCacheHandlerAdapter :: SP_DictCacheHandlerAdapter( SP_DictCacheHandler * handler )
 {
 	mHandler = handler;
 }
 
-SP_CacheHandlerAdapter :: ~SP_CacheHandlerAdapter()
+SP_DictCacheHandlerAdapter :: ~SP_DictCacheHandlerAdapter()
 {
 }
 
-int SP_CacheHandlerAdapter :: compare( const void * item1, const void * item2 ) const
+int SP_DictCacheHandlerAdapter :: compare( const void * item1, const void * item2 ) const
 {
-	SP_CacheEntry * entry1 = ( SP_CacheEntry * ) item1;
-	SP_CacheEntry * entry2 = ( SP_CacheEntry * ) item2;
+	SP_DictCacheEntry * entry1 = ( SP_DictCacheEntry * ) item1;
+	SP_DictCacheEntry * entry2 = ( SP_DictCacheEntry * ) item2;
 
 	return mHandler->compare( entry1->getItem(), entry2->getItem() );
 }
 
-void SP_CacheHandlerAdapter :: destroy( void * item ) const
+void SP_DictCacheHandlerAdapter :: destroy( void * item ) const
 {
-	SP_CacheEntry * entry = ( SP_CacheEntry * ) item;
+	SP_DictCacheEntry * entry = ( SP_DictCacheEntry * ) item;
 	mHandler->destroy( (void*)entry->getItem() );
 	delete entry;
 }
@@ -280,42 +280,42 @@ void SP_CacheHandlerAdapter :: destroy( void * item ) const
 //===========================================================================
 
 
-class SP_CacheImpl : public SP_Cache {
+class SP_DictCacheImpl : public SP_DictCache {
 public:
-	SP_CacheImpl( int algo, int maxItems, SP_CacheHandler * handler );
-	virtual ~SP_CacheImpl();
+	SP_DictCacheImpl( int algo, int maxItems, SP_DictCacheHandler * handler );
+	virtual ~SP_DictCacheImpl();
 
 	virtual int put( void * item, time_t expTime = 0 );
 	virtual int get( const void * key, void * resultHolder );
 	virtual int erase( const void * key );
 	virtual void * remove( const void * key, time_t * expTime = 0 );
-	virtual SP_CacheStatistics * getStatistics();
+	virtual SP_DictCacheStatistics * getStatistics();
 
 private:
-	SP_CacheHandler * mHandler;
+	SP_DictCacheHandler * mHandler;
 	int mMaxItems;
 	int mAlgo;
 
 	SP_Dictionary * mDict;
-	SP_CacheEntryList * mList;
-	SP_CacheStatisticsImpl * mStatistics;
+	SP_DictCacheEntryList * mList;
+	SP_DictCacheStatisticsImpl * mStatistics;
 };
 
-SP_CacheImpl :: SP_CacheImpl( int algo, int maxItems,
-		SP_CacheHandler * handler )
+SP_DictCacheImpl :: SP_DictCacheImpl( int algo, int maxItems,
+		SP_DictCacheHandler * handler )
 {
 	mAlgo = algo;
 	mMaxItems = maxItems;
 	mHandler = handler;
 
 	mDict = SP_Dictionary::newInstance( SP_Dictionary::eBTree,
-			new SP_CacheHandlerAdapter( handler ) );
-	mList = new SP_CacheEntryList();
+			new SP_DictCacheHandlerAdapter( handler ) );
+	mList = new SP_DictCacheEntryList();
 
-	mStatistics = new SP_CacheStatisticsImpl();
+	mStatistics = new SP_DictCacheStatisticsImpl();
 }
 
-SP_CacheImpl :: ~SP_CacheImpl()
+SP_DictCacheImpl :: ~SP_DictCacheImpl()
 {
 	delete mStatistics;
 	delete mList;
@@ -323,14 +323,14 @@ SP_CacheImpl :: ~SP_CacheImpl()
 	delete mHandler;
 }
 
-int SP_CacheImpl :: put( void * item, time_t expTime )
+int SP_DictCacheImpl :: put( void * item, time_t expTime )
 {
 	int result = 0;
 
-	SP_CacheEntry * entry = new SP_CacheEntry( item );
+	SP_DictCacheEntry * entry = new SP_DictCacheEntry( item );
 	entry->setExpTime( expTime );
 
-	SP_CacheEntry * oldEntry = (SP_CacheEntry*)mDict->search( entry );
+	SP_DictCacheEntry * oldEntry = (SP_DictCacheEntry*)mDict->search( entry );
 	if( NULL != oldEntry ) {
 		result = 1;
 
@@ -345,7 +345,7 @@ int SP_CacheImpl :: put( void * item, time_t expTime )
 	mList->append( entry );
 
 	for( ; mDict->getCount() > mMaxItems && mMaxItems > 0; ) {
-		SP_CacheEntry * head = mList->getHead();
+		SP_DictCacheEntry * head = mList->getHead();
 
 		mList->remove( head );
 		mDict->remove( head );
@@ -357,12 +357,12 @@ int SP_CacheImpl :: put( void * item, time_t expTime )
 	return result;
 }
 
-int SP_CacheImpl :: get( const void * key, void * resultHolder )
+int SP_DictCacheImpl :: get( const void * key, void * resultHolder )
 {
 	int result = 0;
 
-	SP_CacheEntry keyEntry( key );
-	SP_CacheEntry * entry = (SP_CacheEntry*)mDict->search( &keyEntry );
+	SP_DictCacheEntry keyEntry( key );
+	SP_DictCacheEntry * entry = (SP_DictCacheEntry*)mDict->search( &keyEntry );
 
 	if( NULL != entry ) {
 		if( entry->getExpTime() > 0 && entry->getExpTime() < time( NULL ) ) {
@@ -385,7 +385,7 @@ int SP_CacheImpl :: get( const void * key, void * resultHolder )
 	return result;
 }
 
-int SP_CacheImpl :: erase( const void * key )
+int SP_DictCacheImpl :: erase( const void * key )
 {
 	int result = 0;
 
@@ -399,12 +399,12 @@ int SP_CacheImpl :: erase( const void * key )
 	return result;
 }
 
-void * SP_CacheImpl :: remove( const void * key, time_t * expTime )
+void * SP_DictCacheImpl :: remove( const void * key, time_t * expTime )
 {
 	void * result = NULL;
 
-	SP_CacheEntry keyEntry( key );
-	SP_CacheEntry * entry = (SP_CacheEntry*)mDict->remove( &keyEntry );
+	SP_DictCacheEntry keyEntry( key );
+	SP_DictCacheEntry * entry = (SP_DictCacheEntry*)mDict->remove( &keyEntry );
 
 	if( NULL != entry ) {
 		mList->remove( entry );
@@ -417,9 +417,9 @@ void * SP_CacheImpl :: remove( const void * key, time_t * expTime )
 	return result;
 }
 
-SP_CacheStatistics * SP_CacheImpl :: getStatistics()
+SP_DictCacheStatistics * SP_DictCacheImpl :: getStatistics()
 {
-	SP_CacheStatisticsImpl * ret = new SP_CacheStatisticsImpl( *mStatistics );
+	SP_DictCacheStatisticsImpl * ret = new SP_DictCacheStatisticsImpl( *mStatistics );
 	ret->setSize( mDict->getCount() );
 
 	return ret;
@@ -427,23 +427,23 @@ SP_CacheStatistics * SP_CacheImpl :: getStatistics()
 
 //===========================================================================
 
-class SP_ThreadSafeCacheWrapper : public SP_Cache {
+class SP_ThreadSafeCacheWrapper : public SP_DictCache {
 public:
-	SP_ThreadSafeCacheWrapper( SP_Cache * cache );
+	SP_ThreadSafeCacheWrapper( SP_DictCache * cache );
 	virtual ~SP_ThreadSafeCacheWrapper();
 
 	virtual int put( void * item, time_t expTime = 0 );
 	virtual int get( const void * key, void * resultHolder );
 	virtual int erase( const void * key );
 	virtual void * remove( const void * key, time_t * expTime );
-	virtual SP_CacheStatistics * getStatistics();
+	virtual SP_DictCacheStatistics * getStatistics();
 
 private:
 
 	void lock();
 	void unlock();
 
-	SP_Cache * mCache;
+	SP_DictCache * mCache;
 
 #ifndef WIN32
 	pthread_mutex_t mMutex;
@@ -453,7 +453,7 @@ private:
 
 };
 
-SP_ThreadSafeCacheWrapper :: SP_ThreadSafeCacheWrapper( SP_Cache * cache )
+SP_ThreadSafeCacheWrapper :: SP_ThreadSafeCacheWrapper( SP_DictCache * cache )
 {
 	mCache = cache;
 
@@ -537,11 +537,11 @@ void * SP_ThreadSafeCacheWrapper :: remove( const void * key, time_t * expTime )
 	return item;
 }
 
-SP_CacheStatistics * SP_ThreadSafeCacheWrapper :: getStatistics()
+SP_DictCacheStatistics * SP_ThreadSafeCacheWrapper :: getStatistics()
 {
 	lock();
 
-	SP_CacheStatistics * stat = mCache->getStatistics();
+	SP_DictCacheStatistics * stat = mCache->getStatistics();
 
 	unlock();
 
@@ -550,14 +550,14 @@ SP_CacheStatistics * SP_ThreadSafeCacheWrapper :: getStatistics()
 
 //===========================================================================
 
-SP_Cache :: ~SP_Cache()
+SP_DictCache :: ~SP_DictCache()
 {
 }
 
-SP_Cache * SP_Cache :: newInstance( int algo,
-		int maxItems, SP_CacheHandler * handler, int threadSafe )
+SP_DictCache * SP_DictCache :: newInstance( int algo,
+		int maxItems, SP_DictCacheHandler * handler, int threadSafe )
 {
-	SP_Cache * cache = new SP_CacheImpl( algo, maxItems, handler );
+	SP_DictCache * cache = new SP_DictCacheImpl( algo, maxItems, handler );
 	if( threadSafe ) cache = new SP_ThreadSafeCacheWrapper( cache );
 
 	return cache;

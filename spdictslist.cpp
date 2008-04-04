@@ -7,24 +7,24 @@
 #include <string.h>
 #include <assert.h>
 
-#include "spslistimpl.hpp"
+#include "spdictslist.hpp"
 
 //===========================================================================
 
-SP_SkipListNode :: SP_SkipListNode( int maxLevel, void * item )
+SP_DictSkipListNode :: SP_DictSkipListNode( int maxLevel, void * item )
 		: mMaxLevel( maxLevel )
 {
 	mItem = item;
-	mForward = (SP_SkipListNode**)malloc( sizeof( void * ) * mMaxLevel );
+	mForward = (SP_DictSkipListNode**)malloc( sizeof( void * ) * mMaxLevel );
 	memset( mForward, 0, sizeof( void * ) * mMaxLevel );
 }
 
-SP_SkipListNode :: ~SP_SkipListNode()
+SP_DictSkipListNode :: ~SP_DictSkipListNode()
 {
 	free( mForward );
 }
 
-void SP_SkipListNode :: setForward( int level, SP_SkipListNode * node )
+void SP_DictSkipListNode :: setForward( int level, SP_DictSkipListNode * node )
 {
 	if( level >= 0 && level < mMaxLevel ) {
 		mForward[ level ] = node;
@@ -33,7 +33,7 @@ void SP_SkipListNode :: setForward( int level, SP_SkipListNode * node )
 	}
 }
 
-SP_SkipListNode * SP_SkipListNode :: getForward( int level ) const
+SP_DictSkipListNode * SP_DictSkipListNode :: getForward( int level ) const
 {
 	if( level >= 0 && level < mMaxLevel ) {
 		return mForward[ level ];
@@ -42,10 +42,10 @@ SP_SkipListNode * SP_SkipListNode :: getForward( int level ) const
 	return NULL;
 }
 
-void SP_SkipListNode :: setMaxLevel( int maxLevel )
+void SP_DictSkipListNode :: setMaxLevel( int maxLevel )
 {
 	if( maxLevel > mMaxLevel ) {
-		mForward = (SP_SkipListNode**)realloc(
+		mForward = (SP_DictSkipListNode**)realloc(
 				mForward, sizeof( void * ) * maxLevel );
 		memset( mForward + mMaxLevel, 0,
 				( maxLevel - mMaxLevel ) * sizeof( void * ) );
@@ -54,22 +54,22 @@ void SP_SkipListNode :: setMaxLevel( int maxLevel )
 	mMaxLevel = maxLevel;
 }
 
-int SP_SkipListNode :: getMaxLevel() const
+int SP_DictSkipListNode :: getMaxLevel() const
 {
 	return mMaxLevel;
 }
 
-void SP_SkipListNode :: setItem( void * item )
+void SP_DictSkipListNode :: setItem( void * item )
 {
 	mItem = item;
 }
 
-void * SP_SkipListNode :: getItem() const
+void * SP_DictSkipListNode :: getItem() const
 {
 	return mItem;
 }
 
-void * SP_SkipListNode :: takeItem()
+void * SP_DictSkipListNode :: takeItem()
 {
 	void * item = mItem;
 	mItem = NULL;
@@ -77,17 +77,17 @@ void * SP_SkipListNode :: takeItem()
 }
 
 //===========================================================================
-SP_SkipListIterator :: SP_SkipListIterator( const SP_SkipListNode * root, int count )
+SP_DictSkipListIterator :: SP_DictSkipListIterator( const SP_DictSkipListNode * root, int count )
 {
 	mCurrent = root->getForward(0);
 	mRemainCount = count;
 }
 
-SP_SkipListIterator :: ~SP_SkipListIterator()
+SP_DictSkipListIterator :: ~SP_DictSkipListIterator()
 {
 }
 
-const void * SP_SkipListIterator :: getNext( int * level )
+const void * SP_DictSkipListIterator :: getNext( int * level )
 {
 	const void * ret = NULL;
 
@@ -103,20 +103,20 @@ const void * SP_SkipListIterator :: getNext( int * level )
 
 //===========================================================================
 
-SP_SkipListImpl :: SP_SkipListImpl( int maxLevel, SP_DictHandler * handler )
+SP_DictSkipList :: SP_DictSkipList( int maxLevel, SP_DictHandler * handler )
 		: mMaxLevel( maxLevel )
 {
 	mHandler = handler;
 	mCount = 0;
-	mRoot = new SP_SkipListNode( 0 );
+	mRoot = new SP_DictSkipListNode( 0 );
 }
 
-SP_SkipListImpl :: ~SP_SkipListImpl()
+SP_DictSkipList :: ~SP_DictSkipList()
 {
 	if( NULL != mRoot ) {
-		for( SP_SkipListNode * curr = mRoot; NULL != curr; ) {
+		for( SP_DictSkipListNode * curr = mRoot; NULL != curr; ) {
 			mHandler->destroy( curr->takeItem() );
-			SP_SkipListNode * next = curr->getForward( 0 );
+			SP_DictSkipListNode * next = curr->getForward( 0 );
 			delete curr;
 			curr = next;
 		}
@@ -124,19 +124,19 @@ SP_SkipListImpl :: ~SP_SkipListImpl()
 	delete mHandler;
 }
 
-int SP_SkipListImpl :: randomLevel( int maxLevel )
+int SP_DictSkipList :: randomLevel( int maxLevel )
 {
 	return ( rand() % maxLevel ) + 1;
 }
 
-int SP_SkipListImpl :: insert( void * item )
+int SP_DictSkipList :: insert( void * item )
 {
-	SP_SkipListNode path( mMaxLevel );
+	SP_DictSkipListNode path( mMaxLevel );
 
-	SP_SkipListNode * node = mRoot;
+	SP_DictSkipListNode * node = mRoot;
 	int cmpRet = 1;
 	for( int i = mRoot->getMaxLevel() - 1; i >= 0; i-- ) {
-		SP_SkipListNode * next = node->getForward( i );
+		SP_DictSkipListNode * next = node->getForward( i );
 		for( ; NULL != next; ) {
 			cmpRet = mHandler->compare( item, next->getItem() );
 			if( cmpRet > 0 ) {
@@ -163,7 +163,7 @@ int SP_SkipListImpl :: insert( void * item )
 			mRoot->setMaxLevel( level );
 		}
 
-		node = new SP_SkipListNode( level, item );
+		node = new SP_DictSkipListNode( level, item );
 		for( int i = 0; i < level; i++ ) {
 			node->setForward( i, path.getForward(i)->getForward( i ) );
 			path.getForward(i)->setForward( i, node );
@@ -174,12 +174,12 @@ int SP_SkipListImpl :: insert( void * item )
 	return ret;
 }
 
-const void * SP_SkipListImpl :: search( const void * key ) const
+const void * SP_DictSkipList :: search( const void * key ) const
 {
-	SP_SkipListNode * node = mRoot;
+	SP_DictSkipListNode * node = mRoot;
 	int ret = 1;
 	for( int i = mRoot->getMaxLevel() - 1; i >= 0 && 0 != ret; i-- ) {
-		SP_SkipListNode * next = node->getForward( i );
+		SP_DictSkipListNode * next = node->getForward( i );
 		for( ; NULL != next; ) {
 			ret = mHandler->compare( key, next->getItem() );
 			if( ret > 0 ) {
@@ -198,16 +198,16 @@ const void * SP_SkipListImpl :: search( const void * key ) const
 	return NULL;
 }
 
-void * SP_SkipListImpl :: remove( const void * key )
+void * SP_DictSkipList :: remove( const void * key )
 {
 	void * ret = NULL;
 
-	SP_SkipListNode path( mMaxLevel );
+	SP_DictSkipListNode path( mMaxLevel );
 
-	SP_SkipListNode * node = mRoot;
+	SP_DictSkipListNode * node = mRoot;
 	int cmpRet = 1;
 	for( int i = mRoot->getMaxLevel() - 1; i >= 0; i-- ) {
-		SP_SkipListNode * next = node->getForward( i );
+		SP_DictSkipListNode * next = node->getForward( i );
 		for( ; NULL != next; ) {
 			cmpRet = mHandler->compare( key, next->getItem() );
 			if( cmpRet > 0 ) {
@@ -224,7 +224,7 @@ void * SP_SkipListImpl :: remove( const void * key )
 
 	if( NULL != node && 0 == cmpRet ) {
 		for( int i = 0; i < mRoot->getMaxLevel(); i++ ) {
-			SP_SkipListNode * curr = path.getForward( i );
+			SP_DictSkipListNode * curr = path.getForward( i );
 			if( NULL != curr ) {
 				if( curr->getForward(i) == node ) {
 					curr->setForward( i, node->getForward( i ) );
@@ -246,12 +246,12 @@ void * SP_SkipListImpl :: remove( const void * key )
 	return ret;
 }
 
-SP_DictIterator * SP_SkipListImpl :: getIterator() const
+SP_DictIterator * SP_DictSkipList :: getIterator() const
 {
-	return new SP_SkipListIterator( mRoot, mCount );
+	return new SP_DictSkipListIterator( mRoot, mCount );
 }
 
-int SP_SkipListImpl :: getCount() const
+int SP_DictSkipList :: getCount() const
 {
 	return mCount;
 }
