@@ -12,7 +12,7 @@ LINT = lint -c
 RM = /bin/rm -f
 
 ifeq ($(origin version), undefined)
-	version = 0.2
+	version = 0.3
 endif
 
 #--------------------------------------------------------------------
@@ -22,7 +22,9 @@ LIBOBJS = spdictionary.o \
 	spdictarray.o spdictbstree.o spdictrbtree.o \
 	spdictcache.o
 
-TARGET =  libspdict.so libspdict.a testdict testcache
+TARGET =  libspdict.so libspdict.a \
+	testdict testcache \
+	testshm testshmcache
 
 #--------------------------------------------------------------------
 
@@ -38,6 +40,12 @@ testdict: testdict.o
 	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
 
 testcache: testcache.o
+	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
+
+testshm: testshm.o spdictshm.o
+	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
+
+testshmcache: testshmcache.o spdictshm.o spdictshmhashmap.o spdictshmcache.o
 	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
 
 dist: clean spdict-$(version).src.tar.gz

@@ -85,19 +85,19 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\sparrayimpl.cpp
+SOURCE=..\spdictarray.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spbstreeimpl.cpp
+SOURCE=..\spdictbstree.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spbtreeimpl.cpp
+SOURCE=..\spdictbtree.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spcache.cpp
+SOURCE=..\spdictcache.cpp
 # End Source File
 # Begin Source File
 
@@ -105,11 +105,27 @@ SOURCE=..\spdictionary.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\sprbtreeimpl.cpp
+SOURCE=..\spdictmmap.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spslistimpl.cpp
+SOURCE=..\spdictrbtree.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictshm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictshmcache.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictshmhashmap.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictslist.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -117,19 +133,19 @@ SOURCE=..\spslistimpl.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\sparrayimpl.hpp
+SOURCE=..\spdictarray.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spbstreeimpl.hpp
+SOURCE=..\spdictbstree.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spbtreeimpl.hpp
+SOURCE=..\spdictbtree.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spcache.hpp
+SOURCE=..\spdictcache.hpp
 # End Source File
 # Begin Source File
 
@@ -137,11 +153,27 @@ SOURCE=..\spdictionary.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\sprbtreeimpl.hpp
+SOURCE=..\spdictmmap.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spslistimpl.hpp
+SOURCE=..\spdictrbtree.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictshm.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictshmcache.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictshmhashmap.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\spdictslist.hpp
 # End Source File
 # End Group
 # End Target
