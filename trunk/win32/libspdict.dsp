@@ -113,7 +113,7 @@ SOURCE=..\spdictrbtree.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spdictshm.cpp
+SOURCE=..\spdictshmalloc.cpp
 # End Source File
 # Begin Source File
 
@@ -161,7 +161,7 @@ SOURCE=..\spdictrbtree.hpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\spdictshm.hpp
+SOURCE=..\spdictshmalloc.hpp
 # End Source File
 # Begin Source File
 
