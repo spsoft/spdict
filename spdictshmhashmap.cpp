@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "spdictshmhashmap.hpp"
-#include "spdictshm.hpp"
+#include "spdictshmalloc.hpp"
 
 SP_DictShmHashMapEntryList :: SP_DictShmHashMapEntryList( size_t * evictHeader,
 		size_t * evictTail, const SP_DictShmAllocator * allocator )

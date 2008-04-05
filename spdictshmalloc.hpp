@@ -3,8 +3,8 @@
  * For license terms, see the file COPYING along with this library.
  */
 
-#ifndef __spdictshm_hpp__
-#define __spdictshm_hpp__
+#ifndef __spdictshmalloc_hpp__
+#define __spdictshmalloc_hpp__
 
 #include <sys/types.h>
 
