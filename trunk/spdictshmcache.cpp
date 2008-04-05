@@ -14,7 +14,7 @@
 using namespace std;
 
 #include "spdictshmcache.hpp"
-#include "spdictshm.hpp"
+#include "spdictshmalloc.hpp"
 #include "spdictshmhashmap.hpp"
 
 class SP_DictShmHashMapHandlerAdapter : public SP_DictShmHashMapHandler {

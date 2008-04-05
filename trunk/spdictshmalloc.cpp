@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#include "spdictshm.hpp"
+#include "spdictshmalloc.hpp"
 #include "spdictmmap.hpp"
 
 SP_DictShmAllocator :: SP_DictShmAllocator( void * ptrBase, size_t len, size_t itemSize )

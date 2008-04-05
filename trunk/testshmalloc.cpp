@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "spdictshm.hpp"
+#include "spdictshmalloc.hpp"
 
 int main( int argc, char * argv[] )
 {

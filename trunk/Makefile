@@ -20,11 +20,12 @@ endif
 LIBOBJS = spdictionary.o \
 	spdictbtree.o spdictslist.o \
 	spdictarray.o spdictbstree.o spdictrbtree.o \
-	spdictcache.o
+	spdictcache.o spdictmmap.o spdictshmalloc.o \
+	spdictshmhashmap.o spdictshmcache.o
 
 TARGET =  libspdict.so libspdict.a \
 	testdict testcache \
-	testshm testshmcache
+	testshmalloc testshmcache
 
 #--------------------------------------------------------------------
 
@@ -42,10 +43,10 @@ testdict: testdict.o
 testcache: testcache.o
 	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
 
-testshm: testshm.o spdictshm.o
-	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
+testshmalloc: testshmalloc.o spdictmmap.o spdictshmalloc.o
+	$(LINKER) $(LDFLAGS) $^ -o $@
 
-testshmcache: testshmcache.o spdictshm.o spdictshmhashmap.o spdictshmcache.o
+testshmcache: testshmcache.o
 	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
 
 dist: clean spdict-$(version).src.tar.gz
