@@ -21,11 +21,12 @@ LIBOBJS = spdictionary.o \
 	spdictbtree.o spdictslist.o \
 	spdictarray.o spdictbstree.o spdictrbtree.o \
 	spdictcache.o spdictmmap.o spdictshmalloc.o \
-	spdictshmhashmap.o spdictshmcache.o
+	spdictshmhashmap.o spdictshmcache.o spdictshmqueue.o
 
 TARGET =  libspdict.so libspdict.a \
 	testdict testcache \
-	testshmalloc testshmcache
+	testshmalloc testshmcache \
+	testshmqueue
 
 #--------------------------------------------------------------------
 
@@ -47,6 +48,9 @@ testshmalloc: testshmalloc.o spdictmmap.o spdictshmalloc.o
 	$(LINKER) $(LDFLAGS) $^ -o $@
 
 testshmcache: testshmcache.o
+	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
+
+testshmqueue: testshmqueue.o
 	$(LINKER) $(LDFLAGS) $^ -L. -lspdict -o $@
 
 dist: clean spdict-$(version).src.tar.gz
