@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#pragma warning(disable : 4786)
+
 #include <set>
 
 using namespace std;
