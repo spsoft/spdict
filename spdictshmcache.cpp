@@ -8,6 +8,8 @@
 #include <time.h>
 #include <stdio.h>
 
+#pragma warning(disable : 4786)
+
 #include <map>
 #include <set>
 
