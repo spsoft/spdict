@@ -1,10 +1,12 @@
 spdict include several implementations of dictionary data structure :
 
-Binary Search Tree
-Red-Black Tree
-Balanced Tree
-Skip List
-Sorted Array
+* Binary Search Tree
+* Red-Black Tree
+* Balanced Tree
+* Skip List
+* Sorted Array
+
+
 Changelog:
 
 Changes in version 0.3 (04.05.2008)
